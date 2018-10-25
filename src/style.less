@@ -1,0 +1,31 @@
+/*
+ * Copyright(c) Oflane Software 2017. All Rights Reserved.
+ */
+.page-layout {
+  .layout-header {
+    padding: 10px 30px;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    margin: 0px;
+    position: relative;
+    background: none 0px 0px repeat scroll rgba(0, 0, 0, 0.02);
+  }
+  .layout-rows {
+    padding: 0;
+    .el-row{
+      padding: 10px 30px;
+      +.el-row{
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
+      }
+    }
+  }
+
+  .layout-body {
+    position: relative;
+    margin: 30px;
+  }
+  .layout-footer {
+    position: relative;
+    margin: 0 30px 30px 30px;
+  }
+}
