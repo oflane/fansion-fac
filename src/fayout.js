@@ -98,27 +98,27 @@ export default {
   name: 'FacLayout',
   template: '<div/>',
   props: {
-    meta: {
+    conf: {
       type: [String, Object],
       require: true
     },
     layoutClass: String
   },
   data () {
-    let meta = this.meta
-    if (typeof meta === 'string') {
+    let conf = this.conf
+    if (typeof conf === 'string') {
       console.log('It is not implement，please wait!!！')
     }
-    if (!meta.header && !meta.body && !meta.footer) {
-      meta = {body: meta}
+    if (!conf.header && !conf.body && !conf.footer) {
+      conf = {body: conf}
     }
     // 计数器
     let slotCount = 0
     return {
       slotCount,
-      header: meta.header,
-      body: meta.body,
-      footer: meta.footer
+      header: conf.header,
+      body: conf.body,
+      footer: conf.footer
     }
   },
   watch: {

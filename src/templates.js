@@ -53,7 +53,7 @@ export default {
   /**
    * 模板中心
    */
-  templates,
+  data: templates,
   /**
    * 根据模板名称获取模板对象
    * @param name

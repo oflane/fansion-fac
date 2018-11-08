@@ -9,7 +9,7 @@ const isNotNull = fase.util.isNotNull
  * 组件中心
  * @type {{}}
  */
-const components = {}
+let components = {}
 
 /**
  * 根据组件类型加载组件注册信息
@@ -17,6 +17,11 @@ const components = {}
  * @returns {object} 组件注册信息
  */
 const load = (type) => components[type]
+
+/**
+ * 添加组件
+ */
+const addComp = fase.builder.register(components)
 /**
  * 根据字段生成模型串
  * @param field {string} 字段名
@@ -317,7 +322,7 @@ export default {
   /**
    * 组件集合
    */
-  components,
+  data: components,
   /**
    * 根据类型加载组件
    * @type {function(*): *}
@@ -326,8 +331,7 @@ export default {
   /**
    * 添加组件
    */
-  addComp: fase.builder.register(components),
-
+  addComp,
   /**
    * 根据组件注册信息生成组件模板属性串
    */

@@ -4,7 +4,7 @@
 
 import Vue from 'vue'
 import layouts from './layouts'
-import metaLoader from './meta'
+import metas from './metas'
 import comps from './comps'
 import fase from 'fansion-base'
 
@@ -30,7 +30,7 @@ function getLayout (meta) {
  * @returns {*} 配置对象
  */
 function getMeta (vm) {
-  let meta = typeof vm.meta === 'string' ? metaLoader.getMeta(vm.meta) : vm.meta
+  let meta = typeof vm.meta === 'string' ? metas.getMeta(vm.meta) : vm.meta
   if (typeof meta !== 'function') {
     return meta
   }
@@ -148,7 +148,7 @@ export default {
 
     if (layout.exist) {
       let layoutComp = layouts.get(layout.name)
-      toRender(this, `<layout :meta="layoutConf" v-loading="pageLoading">${template}</layout>`, Object.assign({layout: layoutComp}, components))
+      toRender(this, `<layout :conf="layoutConf" v-loading="pageLoading">${template}</layout>`, Object.assign({layout: layoutComp}, components))
     } else {
       toRender(this, `${template}`, components)
     }

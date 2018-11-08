@@ -26,7 +26,7 @@ export default {
   /**
    * 布局集合
    */
-  layouts,
+  data: layouts,
   /**
    * 根据名称取得布局组件
    * @param name 布局名称

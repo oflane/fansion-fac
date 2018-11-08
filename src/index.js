@@ -6,7 +6,8 @@ import fayout from './fayout'
 import layouts from './layouts'
 import comps from './comps'
 import fac from './fac'
-import meta from './meta'
+import metas from './metas'
+import templates from './templates'
 import options from './options'
 import fase from 'fansion-base'
 
@@ -29,17 +30,27 @@ const pageMetaRule = (path, pageMetas) => {
 }
 /**
  * 初始化方法
- * @param option
+ * @param Vue vue对象
+ * @param opts 选项
  * @returns {*}
  */
-const init = (option) => {
+const install = (Vue, opts = {}) => {
+  Vue.component(fayout.name, fayout)
+  Vue.component(fac.name, fac)
   fase.init({page: {rules: pageMetaRule}})
-  Object.assign(options, option)
-  meta.init(options.meta)
-  layouts.addLayout(options.layouts)
-  comps.addComp(options.components)
+  init(options)
+  init(opts)
 }
-
+/**
+ * 初始化方法
+ * @param opts 选项
+ */
+const init = function (opts = {}) {
+  opts.meta && metas.init(opts.meta)
+  opts.layouts && layouts.addLayout(opts.layouts)
+  opts.cometas && comps.addComp(opts.cometas)
+  opts.templates && templates.addTemplate(opts.templates)
+}
 /**
  * fac组件模块
  * @author Paul.Yang E-mail:yaboocn@qq.com
@@ -47,11 +58,13 @@ const init = (option) => {
  */
 export default {
   version,
+  install,
   init,
   fayout,
   layouts,
   comps,
   fac,
-  meta,
+  metas,
+  templates,
   options
 }

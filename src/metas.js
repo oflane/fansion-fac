@@ -3,7 +3,7 @@
  */
 
 import fase from 'fansion-base'
-import template from './template'
+import templates from './templates'
 /**
  * fac配置集合
  * @type {{}}
@@ -14,14 +14,14 @@ let metas = {}
  * 元数据加载规则集合
  * @type {Array}
  */
-let rules = [template.rule]
+let rules = [templates.rule]
 
 /**
  * 根据元数据获取元数据名称
  * @param name
  * @returns {*}
  */
-const getMeta =  (name) => {
+const getMeta = (name) => {
   let meta = metas[name]
   if (meta) {
     return meta
@@ -35,6 +35,16 @@ const getMeta =  (name) => {
   return meta
 }
 /**
+ * 添加元数据信息
+ * @param data 需要添加的元数据对象
+ */
+const addMeta = fase.builder.register(metas, 'fac-name')
+/**
+ * 添加规则信息
+ * @param data 规则数据
+ */
+const addRule = fase.builder.collection(rules)
+/**
  * fac元数据加载器
  * @author Paul.Yang E-mail:yaboocn@qq.com
  * @version 1.0 2010/20/18
@@ -43,7 +53,7 @@ export default {
   /**
    * 元数据集合
    */
-  metas,
+  data: metas,
 
   /**
    * 根据元数据获取元数据名称
@@ -55,12 +65,12 @@ export default {
    * 添加元数据信息
    * @param data 需要添加的元数据对象
    */
-  addMeta: fase.builder.register(metas, 'fac-name'),
+  addMeta,
   /**
    * 添加规则信息
    * @param data 规则数据
    */
-  addRule: fase.builder.collection(rules),
+  addRule,
 
   /**
    * 初始化数据
@@ -71,7 +81,7 @@ export default {
     if (!options) {
       return
     }
-    this.addMeta(options.metas)
-    this.addRule(options.rules)
+    addMeta(options.metas)
+    addRule(options.rules)
   }
 }
