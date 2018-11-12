@@ -18,7 +18,7 @@ module.exports = {
     filename: 'fansion-fac.js',
     chunkFilename: '[id].js',
     libraryTarget: 'umd',
-    library: 'FansionFac',
+    library: 'fansion-fac',
     umdNamedDefine: true
   },
   resolve: {
@@ -32,11 +32,14 @@ module.exports = {
   },
   externals: [
     {
-      vue: 'Vue',
-      'vue-router': 'VueRouter',
-      'fansion-base': 'FansionBase'
+      vue: 'vue',
+      'vue-router': 'vue-router',
+      'fansion-base': 'fansion-base'
     }, nodeExternals()
   ],
+  optimization: {
+    minimize: false
+  },
   module: {
     rules: [
       {
