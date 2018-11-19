@@ -37,7 +37,7 @@ const pageMetaRule = (path, pageMetas) => {
 const install = (Vue, opts = {}) => {
   Vue.component(fayout.name, fayout)
   Vue.component(fac.name, fac)
-  fase.init({page: {rules: pageMetaRule}})
+  fase.init({pages: {rules: pageMetaRule}})
   init(options)
   init(opts)
 }
