@@ -6,7 +6,7 @@ import fase from 'fansion-base'
 /**
  * 工具方法
  */
-const {rest: {getJson}, mod: {depend}} = fase
+const {rest: {getJson, fillRestPath}, mod: {depend}} = fase
 
 /**
  * 模板注册中心
@@ -15,27 +15,45 @@ const {rest: {getJson}, mod: {depend}} = fase
 let templates = {}
 
 /**
+ * 根据模板名称获取模板对象
+ * @param name
+ * @returns {*}
+ */
+const getTemplate = (name) => templates[name]
+/**
+ * 加载元数据的url
+ * @type {string}
+ */
+let loadMetaUrl = '/fac/:path'
+
+/**
+ * 设置按路径加载元数据的ur
+ * @param url 加载元数据的url
+ * @returns {*}
+ */
+const setLoadMetaUrl = (url) => (loadMetaUrl = url)
+/**
  * 根据路径加载fac元数据
  * @param path 元数据路径
  * @param metas 元数据中心
  * @returns {Promise}
  */
-const getMeta = (path, metas) => new Promise((resolve) => {
-  getJson(path).then(function (meta) {
+const getMeta = (path, addMeta, metas) => new Promise((resolve) => {
+  getJson(fillRestPath(loadMetaUrl, {path})).then(function (meta) {
     let mp = new Promise((resolve) => {
       resolve(meta)
     })
     // 支持fac配置继承
-    if (metas && meta.base) {
-      depend(mp, metas.get(meta.base))().then(function (data) {
-        data['facName'] = path
-        metas.addMeta(data)
+    if (meta && meta.base) {
+      depend(mp, metas[meta.base]).then(function (data) {
+        data['fac-name'] = path
+        addMeta(data)
         resolve(data)
       })
     } else if (meta.template) {
-      depend(mp, [templates.get(meta.template)])().then(function (data) {
-        data['facName'] = path
-        metas.addMeta(data)
+      depend(mp, [getTemplate(meta.template)]).then(function (data) {
+        data['fac-name'] = path
+        addMeta(data)
         resolve(data)
       })
     } else {
@@ -59,7 +77,7 @@ export default {
    * @param name
    * @returns {*}
    */
-  get: (name) => templates[name],
+  getTemplate,
   /**
    * 添加模板数据
    * @param {Object|Array} 模板注册数据可以时数组，单个模板对象，多个对象map
@@ -71,5 +89,11 @@ export default {
    * @param metas 元数据句中心
    * @returns {*}
    */
-  rule: (path, metas) => path ? _ => getMeta(path, metas) : null
+  rule: (path, addMeta, metas) => path ? getMeta(path, addMeta, metas) : null,
+  /**
+   * 设置按路径加载元数据的ur
+   * @param url 加载元数据的url
+   * @returns {*}
+   */
+  setLoadMetaUrl
 }

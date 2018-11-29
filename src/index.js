@@ -21,11 +21,20 @@ const version = '1.0.0'
  * pageMeta加载fac的加载规则
  * @param path 加载路径
  */
-const pageMetaRule = (path, pageMetas) => {
+const pageMetaRule = (path, addPageMeta, pageMetas) => {
   if (path.startsWith('$')) {
-    let meta = {props: {config: path.substring(1)}, component: fac}
-    pageMetas.addPageMeta(path, meta)
-    return meta
+    path = path.substring(1)
+    let meta = path
+    if (!path.startsWith('/')) {
+      path = '/' + path
+    }
+    let pageMeta = pageMetas[path]
+    if (pageMeta) {
+      return pageMeta
+    }
+    pageMeta = {path, props: {meta}, component: fac}
+    addPageMeta(path, pageMeta)
+    return pageMeta
   }
 }
 /**
@@ -50,6 +59,7 @@ const init = function (opts = {}) {
   opts.layouts && layouts.addLayout(opts.layouts)
   opts.cometas && comps.addComp(opts.cometas)
   opts.templates && templates.addTemplate(opts.templates)
+  opts.loadMetaUrl && templates.setLoadMetaUrl(opts.loadMetaUrl)
 }
 /**
  * fac组件模块

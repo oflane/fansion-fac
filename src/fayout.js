@@ -33,32 +33,32 @@ const defaultFooter = {
 
 /**
  * 内部方法递归生成布局组件
- * @param meta 配置对象
+ * @param conf 配置对象
  * @param type 布局类型
  * @param slot 内部名称
  * @param layout 布局对象
  * @returns {string} 布局模板
  */
-function createLayout (meta, type, slot, layout) {
+function createLayout (conf, type, slot, layout) {
   let tagName = type === 'row' ? rowTag : type === 'col' ? colTag : 'div'
-  let h = '<' + tagName + ' ' + toProps(meta, ['isSlot', 'slot', 'rows', 'cols']) + '>'
+  let h = '<' + tagName + ' ' + toProps(conf, ['isSlot', 'slot', 'rows', 'cols']) + '>'
   let b = ''
-  if (Array.isArray(meta.rows) && meta.rows.length > 0) {
-    b = meta.rows.map((row) => {
+  if (Array.isArray(conf.rows) && conf.rows.length > 0) {
+    b = conf.rows.map((row) => {
       return createLayout(row, 'row', slot)
     }).join('')
-  } else if (Array.isArray(meta.cols) && meta.cols.length > 0) {
-    b = meta.cols.map((col) => {
+  } else if (Array.isArray(conf.cols) && conf.cols.length > 0) {
+    b = conf.cols.map((col) => {
       return createLayout(col, 'col', slot)
     }).join('')
-  } else if (meta.slot) {
-    if (meta.slot === slot) {
+  } else if (conf.slot) {
+    if (conf.slot === slot) {
       if (layout.slotCount > 0) {
-        meta.slot = slot + layout.slotCount
+        conf.slot = slot + layout.slotCount
       }
       layout.slotCount++
     }
-    b = `<slot name="${meta.slot}"/>`
+    b = `<slot name="${conf.slot}"/>`
   }
   let f = `</${tagName}>`
   return `${h}${b}${f}`
@@ -122,7 +122,7 @@ export default {
     }
   },
   watch: {
-    meta (val) {
+    conf (val) {
       if (!val.header && !val.body && !val.footer) {
         val = {body: val}
       }

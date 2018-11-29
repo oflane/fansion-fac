@@ -9,18 +9,18 @@ import comps from './comps'
 import fase from 'fansion-base'
 
 // 获取工具方法
-const {render: {toRender, callHook}, util: {once, proxy}, rest: {getJson}} = fase
+const {render: {toRender, callHook}, util: {once, proxy, isPromise}, rest: {getJson}} = fase
 
 /**
  * 从配置中获取不具配置
  * @param meta 元数据
  * @returns {*}
  */
-function getLayout (meta) {
-  let name = meta.layout
+function getLayout (conf) {
+  let name = conf.layout
   let exist = !!name
   if (exist && typeof name !== 'string') {
-    return Object.assign({exist}, name)
+    return name.conf ? Object.assign({exist}, name) : {exist, conf: name}
   }
   return {exist, name}
 }
@@ -29,13 +29,14 @@ function getLayout (meta) {
  * @param vm {VueComponent} 页面组件
  * @returns {*} 配置对象
  */
-function getMeta (vm) {
-  let meta = typeof vm.meta === 'string' ? metas.getMeta(vm.meta) : vm.meta
-  if (typeof meta !== 'function') {
-    return meta
+function getConf (vm) {
+  let conf = typeof vm.meta === 'string' ? metas.getMeta(vm.meta) : vm.meta
+  if (typeof conf !== 'function' && !isPromise(conf)) {
+    return conf
   }
   // 配置信息为方法时的处理
-  let factory = meta
+  let factory = conf
+  // 此时要求factory是一个固定对象，如果每次构建一个方法对象则此处取不到值
   if (factory.resolved) {
     return factory.resolved
   }
@@ -47,40 +48,40 @@ function getMeta (vm) {
     if (typeof res.uimeta === 'string') {
       try {
         /* Get Server Config */
-        getJson(res.uimeta).then(function (meta) {
-          res = Object.assign(res, meta)
+        getJson(res.uimeta).then(function (uimeta) {
+          res = Object.assign(res, uimeta)
         })
       } catch (e) {
         console.log(e)
       } finally {
         res.uimeta = null
         factory.resolved = res
-        vm.metaing = false
+        vm.confing = false
         vm.$mount()
         callHook(vm, 'mounted')
       }
     } else {
       factory.resolved = res
-      vm.metaing = false
+      vm.confing = false
       vm.$mount()
       callHook(vm, 'mounted')
     }
   })
   const reject = once(reason => {
     console.log(reason)
-    vm.metaing = false
+    vm.confing = false
     factory.error = true
   })
-  vm.metaing = true
+  vm.confing = true
   vm._isMounted = true
-  meta = factory(resolve, reject)
-  if (typeof meta === 'object' && typeof meta.then === 'function' && !factory.resolved) {
-    meta.then(resolve, reject)
+  conf = typeof factory === 'function' ? factory(resolve, reject) : conf
+  if (typeof conf === 'object' && isPromise(conf) && !factory.resolved) {
+    conf.then(resolve, reject)
     return
   }
-  factory.resolved = meta
-  vm.metaing = false
-  return meta
+  factory.resolved = conf
+  vm.confing = false
+  return conf
 }
 export default {
   name: 'Fac',
@@ -90,21 +91,24 @@ export default {
       type: [String, Object],
       required: true
     },
-    model: {
+    data: {
       type: [String, Object],
-      default: {}
+      default () {
+        return {}
+      }
     },
-    page: Object
+    owner: Object
   },
 
   data () {
     let layout = {}
-    let meta = {}
-    if (!this.page) {
-      this.page = this
-    }
+    let conf = this.meta
+    let page = this.owner ? this.owner : this
+    let model = this.data
     return {
-      meta,
+      conf,
+      model,
+      page,
       layout,
       pageLoading: true,
       pageState: 'init'
@@ -115,31 +119,34 @@ export default {
       this.$mount()
       callHook(this, 'mounted')
     },
+    data (v) {
+      this.model = v
+    },
     pageState (val, oldVal) {
       val !== oldVal && this.$emit('stateChanged', val)
     }
   },
   beforeMount: function () {
     let _self = this
-    let meta = getMeta(_self)
-    if (!meta || _self.metaing) {
+    let conf = getConf(_self)
+    if (!conf || _self.confing) {
       return
     }
-    _self.meta = meta
+    _self.conf = conf
     // 获取布局信息
-    let layout = getLayout(meta)
+    let layout = getLayout(conf)
     // noc标志为使用vue组件进行显示，而不是通过配置加载
-    let {components, template} = meta.noc ? meta : comps.compileComps(meta.components)
+    let {components, template} = conf.noc ? conf : comps.compileComps(conf.components)
     // 使用配置数据覆盖默认数据
-    Object.assign(_self, meta.methods, {layout: layout.meta}, typeof meta.member === 'function' ? meta.member.call(this) : meta.member)
+    Object.assign(_self, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
     // 执行配置中的data方法
-    let metaData = typeof meta.data === 'function' ? meta.data.call(this) : meta.data
+    let confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
     // 监测新的data对象
-    if (metaData !== null && typeof metaData === 'object') {
+    if (confData !== null && typeof confData === 'object') {
       // hack handle see vue.js, Observer and Vue.prototype.$set
       let old = _self._data.__ob__.vmCount
       _self._data.__ob__.vmCount = 0
-      Object.entries(metaData).forEach(([k, v]) => {
+      Object.entries(confData).forEach(([k, v]) => {
         _self.$set(_self._data, k, v)
         proxy(_self, '_data', k)
       })
@@ -147,8 +154,8 @@ export default {
     }
 
     if (layout.exist) {
-      let layoutComp = layouts.get(layout.name)
-      toRender(this, `<layout :conf="layoutConf" v-loading="pageLoading">${template}</layout>`, Object.assign({layout: layoutComp}, components))
+      let layoutComp = layouts.getLayout(layout.name)
+      toRender(this, `<layout :conf="layout" v-loading="pageLoading">${template}</layout>`, Object.assign({layout: layoutComp}, components))
     } else {
       toRender(this, `${template}`, components)
     }

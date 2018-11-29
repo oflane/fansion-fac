@@ -27,7 +27,7 @@ const getMeta = (name) => {
     return meta
   }
   rules.every(r => {
-    meta = r(name, this)
+    meta = r(name, addMeta, metas)
     if (meta) {
       return false
     }
