@@ -41,7 +41,7 @@ const defaultFooter = {
  */
 function createLayout (conf, type, slot, layout) {
   let tagName = type === 'row' ? rowTag : type === 'col' ? colTag : 'div'
-  let h = '<' + tagName + ' ' + toProps(conf, ['isSlot', 'slot', 'rows', 'cols']) + '>'
+  let h = '<' + tagName + ' ' + toProps(conf, ['isSlot', 'slot', 'rows', 'cols', 'children']) + '>'
   let b = ''
   if (Array.isArray(conf.rows) && conf.rows.length > 0) {
     b = conf.rows.map((row) => {
@@ -50,6 +50,10 @@ function createLayout (conf, type, slot, layout) {
   } else if (Array.isArray(conf.cols) && conf.cols.length > 0) {
     b = conf.cols.map((col) => {
       return createLayout(col, 'col', slot)
+    }).join('')
+  } else if (conf.children) {
+    b = conf.children.map((child) => {
+      return createLayout(child, 'child', slot)
     }).join('')
   } else if (conf.slot) {
     if (conf.slot === slot) {

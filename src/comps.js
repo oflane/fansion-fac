@@ -4,7 +4,13 @@
 import fase from 'fansion-base'
 
 // 初始化工具方法
-const isNotNull = fase.util.isNotNull
+const isNotEmpty = fase.util.isNotEmpty
+
+/**
+ * 放入template内容的配置属性
+ * @type {string}
+ */
+const CONTENT_KEY = '#content'
 /**
  * 组件中心
  * @type {{}}
@@ -16,7 +22,7 @@ let components = {}
  * @param type 组件类型
  * @returns {object} 组件注册信息
  */
-const load = (type) => components[type]
+const load = (type) => components[type.toDash()] || components[type.toClassify()]
 
 /**
  * 添加组件
@@ -53,19 +59,26 @@ function propVal (obj1, obj2, dv, ...prop) {
   let r = dv
   prop.every(p => {
     let v = obj1[p]
-    if (isNotNull(v)) {
+    if (isNotEmpty(v)) {
       r = v
       return false
     }
     v = obj2[p]
-    if (isNotNull(v)) {
+    if (isNotEmpty(v)) {
       r = v
       return false
     }
+    return true
   })
   return r
 }
 
+/**
+ * 判断组件配置对象中的conf属性是否为空包括引用属性:conf
+ * @param comp
+ * @returns {boolean}
+ */
+const isNullOfConf = comp => !comp.conf && !comp[':conf'] && (!comp.props || (!comp.props.conf && !comp.props[':conf']))
 /**
  * 构建组件tag的属性列表串
  * @param reg 组件注册信息
@@ -85,83 +98,85 @@ const buildTagProp = (reg, conf) => {
       let dp = ':' + p
       delete otherProps[p]
       delete otherProps[dp]
-      if (p === 'page' || p === 'conf') {
+      if (p === CONTENT_KEY) {
+        return ''
+      } else if (p === 'page' || p === 'conf') {
         let m = propVal(conf, props, p, p, dp)
         return `:${p}="${m}"`
       } else if (p === 'vModel' || p === 'v-model') {
         let m = propVal(conf, props, null, p)
-        if (isNotNull(m)) {
+        if (isNotEmpty(m)) {
           return 'v-model="' + m + '"'
         }
         let fd = conf['field'] || props['field']
-        if (isNotNull(fd)) {
+        if (isNotEmpty(fd)) {
           return 'v-model="' + getModel(fd) + '"'
         }
       } else if (p.startsWith('vModel.') || p.startsWith('v-model.')) {
         let suf = p.substring(p.indexOf('.') + 1)
         let m = propVal(conf, props, null, p, 'vModel', 'v-model')
-        if (isNotNull(m)) {
+        if (isNotEmpty(m)) {
           return `v-model.${suf}="${m}"`
         }
         let fd = conf['field'] || props['field']
-        if (isNotNull(fd)) {
+        if (isNotEmpty(fd)) {
           let m = getModel(fd)
           return `v-model.${suf}="${m}"`
         }
       } else if (p === 'vText' || p === 'v-text') {
         let fd = conf['field'] || props['field']
-        if (isNotNull(fd)) {
+        if (isNotEmpty(fd)) {
           return 'v-text="' + getModel(fd) + '"'
         }
       } else if (p === 'vHtml' || p === 'v-html') {
         let fd = conf.field || conf.props.field
-        if (isNotNull(fd)) {
+        if (isNotEmpty(fd)) {
           return 'v-html="' + getModel(fd) + '"'
         }
       } else if (p === 'model') {
         let m = propVal(conf, props, null, p)
-        if (isNotNull(m)) {
+        if (isNotEmpty(m)) {
           return `${p}="${m}"`
         }
         m = propVal(conf, props, 'model', dp)
         return `:${p}="${m}"`
       } else if (p === 'showLabel.sync' || p === 'show-label.sync' || p === 'vLabel' || p === 'v-label') {
         let m = propVal(conf, props, null, p)
-        if (isNotNull(m)) {
+        if (isNotEmpty(m)) {
           return ':show-label.sync="' + m + '"'
         }
         let fd = conf['labelField'] || props['labelField']
-        if (isNotNull(fd)) {
+        if (isNotEmpty(fd)) {
           return ':show-label.sync="' + getModel(fd) + '"'
         }
         let bfd = conf['field'] || props['field']
-        if (isNotNull(bfd)) {
+        if (isNotEmpty(bfd)) {
           return ':show-label.sync="' + getModel(fd + '_label') + '"'
         }
       } else {
         let m = propVal(conf, props, null, p)
-        if (isNotNull(m)) {
-          return t === 'string' ? `${p}="${m}"` : `${p}=${m}`
+        if (isNotEmpty(m)) {
+          return typeof m === 'boolean' ? (m ? p.toDash() : '') : t === 'string' ? `${p.toDash()}="${m}"` : t === 'boolean' ? (m ? p.toDash() : '') : `${p.toDash()}=${m}`
         }
         m = propVal(conf, props, null, dp)
-        if (isNotNull(m) && typeof m !== 'string') {
+        if (isNotEmpty(m) && typeof m !== 'string') {
           m = `conf['${dp}']`
         }
-        if (isNotNull(m)) {
+        if (isNotEmpty(m)) {
           return `:${p.toDash()}="${m}"`
         }
         m = dvs[p]
-        if (isNotNull(m)) {
-          return t === 'string' || typeof m === 'string' ? `${p.toDash()}="${m}"` : `${p.toDash()}=${m}`
+        if (isNotEmpty(m)) {
+          return typeof m === 'boolean' ? (m ? p.toDash() : '') : t === 'string' ? `${p.toDash()}="${m}"` : t === 'boolean' ? (m ? p.toDash() : '') : `${p.toDash()}=${m}`
         }
         m = dvs[dp]
-        if (isNotNull(m)) {
-          return t === 'string' || typeof m === 'string' ? `:${p.toDash()}="${m}"` : `:${p.toDash()}=${m}`
+        if (isNotEmpty(m)) {
+          return typeof m === 'boolean' ? (m ? p.toDash() : '') : t === 'string' || typeof m === 'string' ? `:${p.toDash()}="${m}"` : `:${p.toDash()}=${m}`
         }
       }
     }).join(' ')
     propStr += Object.entries(otherProps).map(([k, y]) => {
-      if (isNotNull(y)) {
+      if (isNotEmpty(y)) {
         return k + '="' + y + '"'
       }
       return ''
@@ -169,7 +184,7 @@ const buildTagProp = (reg, conf) => {
   } else if (conf.props) {
     propStr = ':page="page" :conf="conf "'
     propStr += Object.entries(conf.props).map(([k, y]) => {
-      if (isNotNull(y)) {
+      if (isNotEmpty(y)) {
         return k + '="' + y + '"'
       }
       return ''
@@ -177,7 +192,7 @@ const buildTagProp = (reg, conf) => {
   } else {
     propStr = ':page="page" :conf="conf "'
     propStr += Object.entries(conf).map(([k, y]) => {
-      if (isNotNull(y)) {
+      if (isNotEmpty(y)) {
         return k + '="' + y + '"'
       }
       return ''
@@ -185,7 +200,7 @@ const buildTagProp = (reg, conf) => {
   }
   if (conf.events) {
     propStr += Object.entries(conf.events).map(([k, y]) => {
-      if (isNotNull(y)) {
+      if (isNotEmpty(y)) {
         if (!k.startsWith('@')) {
           k = '@' + k
         }
@@ -228,7 +243,7 @@ const compile = (config) => {
   let attrsProps = ''
   if (attrs) {
     attrsProps = Object.entries(attrs).map(([k, v]) => {
-      return k + '="' + v + '"'
+      return typeof v === 'boolean' ? (v ? k.toDash() : '') : k + '="' + v + '"'
     }).join(' ')
     if (attrsProps.length > 0) {
       attrsProps = ' ' + attrsProps
@@ -239,12 +254,29 @@ const compile = (config) => {
     components[tagName] = comp.component
   }
   let slot = config.pos ? ` slot="${config.pos}"` : ''
+  let content = config[CONTENT_KEY]
   return {
     components,
-    template: `<${tagName} ${props}${attrsProps}${slot}/>`
+    template: content ? `<${tagName} ${props}${attrsProps}${slot}>${content}</${tagName}>` : `<${tagName} ${props}${attrsProps}${slot}/>`
   }
 }
 
+/**
+ * 处理单个组件配置，并进行组件编译
+ * @param cs 组件集合
+ * @param v 组件配置
+ * @param i 组件位置（键值或索引)
+ * @returns {string}
+ */
+const compileComp = (cs, v, i) => {
+  if (!v) {
+    return ''
+  }
+  isNullOfConf(v) && (v.conf = `conf.components[${i}]`)
+  let {components, template} = compile(v)
+  Object.assign(cs, components)
+  return template
+}
 /**
  * 根据多个组件配置对象生成组件元数据(模板和组件列表)
  * @param conf 多组件配置
@@ -254,24 +286,7 @@ const compileComps = (conf) => {
   let cs = {}
   return {
     components: cs,
-    template: !conf ? '' : Array.isArray(conf) ? conf.map((v, i) => {
-      if (!v) {
-        return
-      }
-      if (!v.conf && (!v.props || !v.props.conf)) {
-        v.conf = `conf.components[${i}]`
-      }
-      let {components, template} = compile(v)
-      Object.assign(cs, components)
-      return template
-    }).join('') : Object.entries(conf).map(({k, v}) => {
-      if (!v.conf && (!v.props || !v.props.conf)) {
-        v.conf = `conf.components['${k}']`
-      }
-      let {components, template} = compile(v)
-      Object.assign(cs, components)
-      return template
-    }).join('')
+    template: !conf ? '' : (Array.isArray(conf) ? conf.map((v, i) => compileComp(cs, v, i)) : Object.entries(conf).map(([i, v]) => compileComp(cs, v, i))).join('')
   }
 }
 

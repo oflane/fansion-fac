@@ -139,6 +139,20 @@ export default {
     let {components, template} = conf.noc ? conf : comps.compileComps(conf.components)
     // 使用配置数据覆盖默认数据
     Object.assign(_self, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
+    // 处理观察者
+    if (conf.watch) {
+      Object.entries((k, v) => {
+        if (!v) {
+          return
+        }
+        if (typeof v === 'function') {
+          _self.$watch(k, v)
+        } else if (typeof v.handler === 'function') {
+          let {immediate, deep} = v
+          _self.$watch(k, v.handler, {immediate, deep})
+        }
+      })
+    }
     // 执行配置中的data方法
     let confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
     // 监测新的data对象
