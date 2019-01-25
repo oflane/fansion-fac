@@ -141,7 +141,7 @@ export default {
     Object.assign(_self, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
     // 处理观察者
     if (conf.watch) {
-      Object.entries((k, v) => {
+      Object.entries(conf.watch).forEach(([k, v]) => {
         if (!v) {
           return
         }
