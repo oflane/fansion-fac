@@ -24,7 +24,7 @@ const getTemplate = (name) => templates[name]
  * 加载元数据的url
  * @type {string}
  */
-let loadMetaUrl = '/fac/:path'
+let loadMetaUrl = '/fac/meta/:path'
 
 /**
  * 设置按路径加载元数据的ur

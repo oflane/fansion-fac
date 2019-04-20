@@ -9,7 +9,7 @@ import comps from './comps'
 import fase from 'fansion-base'
 
 // 获取工具方法
-const {render: {toRender, callHook}, util: {once, proxy, isPromise}, rest: {getJson}} = fase
+const {render: {toRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject}, rest: {getJson}} = fase
 
 /**
  * 从配置中获取不具配置
@@ -140,23 +140,21 @@ export default {
     // 使用配置数据覆盖默认数据
     Object.assign(_self, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
     // 处理观察者
-    if (conf.watch) {
-      Object.entries(conf.watch).forEach(([k, v]) => {
-        if (!v) {
-          return
-        }
-        if (typeof v === 'function') {
-          _self.$watch(k, v)
-        } else if (typeof v.handler === 'function') {
-          let {immediate, deep} = v
-          _self.$watch(k, v.handler, {immediate, deep})
-        }
-      })
-    }
+    conf.watch && Object.entries(conf.watch).forEach(([k, v]) => {
+      if (!v) {
+        return
+      }
+      if (typeof v === 'function') {
+        _self.$watch(k, v)
+      } else if (typeof v.handler === 'function') {
+        let {immediate, deep} = v
+        _self.$watch(k, v.handler, {immediate, deep})
+      }
+    })
     // 执行配置中的data方法
     let confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
     // 监测新的data对象
-    if (confData !== null && typeof confData === 'object') {
+    if (isNotEmptyObject(confData)) {
       // hack handle see vue.js, Observer and Vue.prototype.$set
       let old = _self._data.__ob__.vmCount
       _self._data.__ob__.vmCount = 0
@@ -175,12 +173,8 @@ export default {
     }
   },
   mounted () {
-    if (typeof this.initPage === 'function') {
-      this.initPage()
-    }
     let vm = this
-    Vue.nextTick(() => {
-      vm.pageLoading = false
-    })
+    typeof vm.initPage === 'function' && vm.initPage()
+    Vue.nextTick(() => (vm.pageLoading = false))
   }
 }
