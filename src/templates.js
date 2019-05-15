@@ -6,7 +6,7 @@ import fase from 'fansion-base'
 /**
  * 工具方法
  */
-const {rest: {getJson, fillRestPath}, mod: {depend}} = fase
+const { rest: {getJson, fillRestPath}, mod: { depend } } = fase
 
 /**
  * 模板注册中心
@@ -39,7 +39,7 @@ const setLoadMetaUrl = (url) => (loadMetaUrl = url)
  * @returns {Promise}
  */
 const getMeta = (path, addMeta, metas) => new Promise((resolve) => {
-  getJson(fillRestPath(loadMetaUrl, {path})).then(function (meta) {
+  getJson(fillRestPath(loadMetaUrl, { path })).then(function (meta) {
     let mp = new Promise((resolve) => {
       resolve(meta)
     })

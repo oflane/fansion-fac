@@ -25,9 +25,7 @@ const pageMetaRule = (path, addPageMeta, pageMetas) => {
   if (path.startsWith('$')) {
     path = path.substring(1)
     let meta = path
-    if (!path.startsWith('/')) {
-      path = '/' + path
-    }
+    path = path.prefix('/')
     let pageMeta = pageMetas[path]
     if (pageMeta) {
       return pageMeta

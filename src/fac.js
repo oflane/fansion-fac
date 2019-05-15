@@ -9,7 +9,7 @@ import comps from './comps'
 import fase from 'fansion-base'
 
 // 获取工具方法
-const {render: {toRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject}, rest: {getJson}} = fase
+const {render: {toRender, resetRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject, sure}, rest: {getJson}} = fase
 
 /**
  * 从配置中获取不具配置
@@ -83,6 +83,27 @@ function getConf (vm) {
   vm.confing = false
   return conf
 }
+/**
+ * 释放资源
+ * @param meta 元数据
+ * @returns {*}
+ */
+function release (vm) {
+  let r = vm.__rls
+  if (!r) {
+    return
+  }
+  r.props && r.props.forEach(k => sure(vm[k] = null) && delete vm[k])
+  let old = vm._data.__ob__.vmCount
+  vm._data.__ob__.vmCount = 0
+  r.setss && r.setss.forEach(k => sure(vm.$delete(vm._data, k)) && delete vm._data[k])
+  vm._data.__ob__.vmCount = old
+  r.watch.forEach(k => k())
+  vm.model = {}
+  vm.layout = {}
+  vm.pageLoading = true
+  vm.pageState = 'init'
+}
 export default {
   name: 'Fac',
   template: '<div/>',
@@ -106,8 +127,8 @@ export default {
     let page = this.owner ? this.owner : this
     let model = this.data
     return {
-      conf,
       model,
+      conf,
       page,
       layout,
       pageLoading: true,
@@ -116,61 +137,73 @@ export default {
   },
   watch: {
     meta () {
+      resetRender(this)
+      this._update(this._render(), false)
       this.$mount()
-      callHook(this, 'mounted')
     },
     data (v) {
       this.model = v
+    },
+    model (v) {
+      console.log(v)
     },
     pageState (val, oldVal) {
       val !== oldVal && this.$emit('stateChanged', val)
     }
   },
   beforeMount: function () {
-    let _self = this
-    let conf = getConf(_self)
-    if (!conf || _self.confing) {
+    let vm = this
+    let conf = getConf(vm)
+    if (!conf || vm.confing) {
       return
     }
-    _self.conf = conf
+    release(vm)
+    vm.conf = conf
     // 获取布局信息
     let layout = getLayout(conf)
     // noc标志为使用vue组件进行显示，而不是通过配置加载
     let {components, template} = conf.noc ? conf : comps.compileComps(conf.components)
     // 使用配置数据覆盖默认数据
-    Object.assign(_self, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
+    let ms = Object.assign({}, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
+    let rlsProp = {props: Object.keys(ms)}
+    Object.assign(vm, ms)
+
+    // 执行配置中的data方法
+    let confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
+    // 监测新的data对象
+    if (isNotEmptyObject(confData)) {
+      rlsProp.setss = Object.keys(confData)
+      // hack handle see vue.js, Observer and Vue.prototype.$set
+      let old = vm._data.__ob__.vmCount
+      vm._data.__ob__.vmCount = 0
+      Object.entries(confData).forEach(([k, v]) => {
+        vm.$set(vm._data, k, v)
+        proxy(vm, '_data', k)
+      })
+      vm._data.__ob__.vmCount = old
+    }
+    conf.model && (vm.model = conf.model)
+    rlsProp.watch = []
     // 处理观察者
     conf.watch && Object.entries(conf.watch).forEach(([k, v]) => {
       if (!v) {
         return
       }
       if (typeof v === 'function') {
-        _self.$watch(k, v)
+        rlsProp.watch.push(vm.$watch(k, v))
       } else if (typeof v.handler === 'function') {
         let {immediate, deep} = v
-        _self.$watch(k, v.handler, {immediate, deep})
+        rlsProp.watch.push(vm.$watch(k, v.handler, {immediate, deep}))
       }
     })
-    // 执行配置中的data方法
-    let confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
-    // 监测新的data对象
-    if (isNotEmptyObject(confData)) {
-      // hack handle see vue.js, Observer and Vue.prototype.$set
-      let old = _self._data.__ob__.vmCount
-      _self._data.__ob__.vmCount = 0
-      Object.entries(confData).forEach(([k, v]) => {
-        _self.$set(_self._data, k, v)
-        proxy(_self, '_data', k)
-      })
-      _self._data.__ob__.vmCount = old
-    }
-
+    vm.__rls = rlsProp
     if (layout.exist) {
       let layoutComp = layouts.getLayout(layout.name)
       toRender(this, `<layout :conf="layout" v-loading="pageLoading">${template}</layout>`, Object.assign({layout: layoutComp}, components))
     } else {
       toRender(this, `${template}`, components)
     }
+    callHook(vm, 'mounted')
   },
   mounted () {
     let vm = this
