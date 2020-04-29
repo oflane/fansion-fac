@@ -17,7 +17,7 @@
     "dist": "cross-env NODE_ENV=prod MODE=dist node build/build.js"
   },
   "devDependencies": {
-    "fansion-base": "../fansion-base",
+    "fansion-base": "^1.0.0",
     "babel-core": "^6.26.3",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^10.1.0",
