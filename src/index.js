@@ -24,7 +24,7 @@ const version = '1.0.0'
 const pageMetaRule = (path, addPageMeta, pageMetas) => {
   if (path.startsWith('$')) {
     path = path.substring(1)
-    let meta = path
+    const meta = path
     path = path.prefix('/')
     let pageMeta = pageMetas[path]
     if (pageMeta) {

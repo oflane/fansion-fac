@@ -6,13 +6,13 @@ import fase from 'fansion-base'
 /**
  * 工具方法
  */
-const { rest: {getJson, fillRestPath}, mod: { depend } } = fase
+const { rest: {gson, furl}, mod: { depend } } = fase
 
 /**
  * 模板注册中心
  * @type {{}}
  */
-let templates = {}
+const templates = {}
 
 /**
  * 根据模板名称获取模板对象
@@ -39,8 +39,8 @@ const setLoadMetaUrl = (url) => (loadMetaUrl = url)
  * @returns {Promise}
  */
 const getMeta = (path, addMeta, metas) => new Promise((resolve) => {
-  getJson(fillRestPath(loadMetaUrl, { path })).then(function (meta) {
-    let mp = new Promise((resolve) => {
+  gson(furl(loadMetaUrl, { path })).then(function (meta) {
+    const mp = new Promise((resolve) => {
       resolve(meta)
     })
     // 支持fac配置继承
