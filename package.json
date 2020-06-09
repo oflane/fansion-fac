@@ -5,7 +5,7 @@
   "author": "yaboocn <yaboocn@qq.com>",
   "main": "lib/fansion-fac.js",
   "publishConfig": {
-    "registry": "http://172.20.26.86:8081/repository/hrcloud/"
+    "registry": "http://localhost:8081/repository/fansion-repo/"
   },
   "files": [
     "lib",
