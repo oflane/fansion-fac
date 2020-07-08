@@ -15,7 +15,7 @@ const CONTENT_KEY = '#content'
  * 组件中心
  * @type {{}}
  */
-let components = {}
+const components = {}
 
 /**
  * 根据组件类型加载组件注册信息
@@ -87,49 +87,49 @@ const isNullOfConf = comp => !comp.conf && !comp[':conf'] && (!comp.props || (!c
  */
 const buildTagProp = (reg, conf) => {
   let propStr
-  let props = conf.props || {}
-  let otherProps = Object.assign({}, props)
+  const props = conf.props || {}
+  const otherProps = Object.assign({}, props)
   if (reg.props) {
-    let dvs = reg.default || {}
+    const dvs = reg.default || {}
     propStr = reg.props.map((p) => {
-      let pt = p.split(':')
+      const pt = p.split(':')
       p = pt[0]
-      let t = pt.length > 1 ? pt[1] : 'string'
-      let dp = ':' + p
+      const t = pt.length > 1 ? pt[1] : 'string'
+      const dp = ':' + p
       delete otherProps[p]
       delete otherProps[dp]
       if (p === CONTENT_KEY) {
         return ''
       } else if (p === 'page' || p === 'conf') {
-        let m = propVal(conf, props, p, p, dp)
+        const m = propVal(conf, props, p, p, dp)
         return `:${p}="${m}"`
       } else if (p === 'vModel' || p === 'v-model') {
-        let m = propVal(conf, props, null, p)
+        const m = propVal(conf, props, null, p)
         if (isNotEmpty(m)) {
           return 'v-model="' + m + '"'
         }
-        let fd = conf['field'] || props['field']
+        const fd = conf.field || props.field
         if (isNotEmpty(fd)) {
           return 'v-model="' + getModel(fd) + '"'
         }
       } else if (p.startsWith('vModel.') || p.startsWith('v-model.')) {
-        let suf = p.substring(p.indexOf('.') + 1)
-        let m = propVal(conf, props, null, p, 'vModel', 'v-model')
+        const suf = p.substring(p.indexOf('.') + 1)
+        const m = propVal(conf, props, null, p, 'vModel', 'v-model')
         if (isNotEmpty(m)) {
           return `v-model.${suf}="${m}"`
         }
-        let fd = conf['field'] || props['field']
+        const fd = conf.field || props.field
         if (isNotEmpty(fd)) {
-          let m = getModel(fd)
+          const m = getModel(fd)
           return `v-model.${suf}="${m}"`
         }
       } else if (p === 'vText' || p === 'v-text') {
-        let fd = conf['field'] || props['field']
+        const fd = conf.field || props.field
         if (isNotEmpty(fd)) {
           return 'v-text="' + getModel(fd) + '"'
         }
       } else if (p === 'vHtml' || p === 'v-html') {
-        let fd = conf.field || conf.props.field
+        const fd = conf.field || conf.props.field
         if (isNotEmpty(fd)) {
           return 'v-html="' + getModel(fd) + '"'
         }
@@ -141,17 +141,17 @@ const buildTagProp = (reg, conf) => {
         m = propVal(conf, props, 'model', dp)
         return `:${p}="${m}"`
       } else if (p === 'showLabel.sync' || p === 'show-label.sync' || p === 'vLabel' || p === 'v-label') {
-        let m = propVal(conf, props, null, p)
+        const m = propVal(conf, props, null, p)
         if (isNotEmpty(m)) {
           return ':show-label.sync="' + m + '"'
         }
-        let fd = conf['labelField'] || props['labelField']
+        const fd = conf.labelField || props.labelField
         if (isNotEmpty(fd)) {
           return ':show-label.sync="' + getModel(fd) + '"'
         }
-        let bfd = conf['field'] || props['field']
+        const bfd = conf.field || props.field
         if (isNotEmpty(bfd)) {
-          return ':show-label.sync="' + getModel(fd + '_label') + '"'
+          return ':show-label.sync="' + getModel(bfd + '_label') + '"'
         }
       } else {
         let m = propVal(conf, props, null, p)
@@ -221,8 +221,8 @@ const buildTagProp = (reg, conf) => {
  * @returns {{components: {}, template: string}} 组件元数据
  */
 const compile = (config) => {
-  let type = typeof config === 'string' ? config : config.type || 'input'
-  let comp = load(type)
+  const type = typeof config === 'string' ? config : config.type || 'input'
+  const comp = load(type)
   if (typeof comp === 'function') {
     return comp(config)
   }
@@ -230,8 +230,8 @@ const compile = (config) => {
     return comp.component(config)
   }
   let {props, attrs} = comp
-  let t = typeof props
-  let tagName = comp.tagName || type
+  const t = typeof props
+  const tagName = comp.tagName || type
   if (t === 'function') {
     props = props(tagName, comp, config)
   } else if (t === 'string') {
@@ -249,12 +249,12 @@ const compile = (config) => {
       attrsProps = ' ' + attrsProps
     }
   }
-  let components = {}
+  const components = {}
   if (comp.component) {
     components[tagName] = comp.component
   }
-  let slot = config.pos ? ` slot="${config.pos}"` : ''
-  let content = config[CONTENT_KEY]
+  const slot = config.pos ? ` slot="${config.pos}"` : ''
+  const content = config[CONTENT_KEY]
   return {
     components,
     template: content ? `<${tagName} ${props}${attrsProps}${slot}>${content}</${tagName}>` : `<${tagName} ${props}${attrsProps}${slot}/>`
@@ -273,7 +273,7 @@ const compileComp = (cs, v, i) => {
     return ''
   }
   isNullOfConf(v) && (v.conf = `conf.components[${i}]`)
-  let {components, template} = compile(v)
+  const {components, template} = compile(v)
   Object.assign(cs, components)
   return template
 }
@@ -283,7 +283,7 @@ const compileComp = (cs, v, i) => {
  * @returns {{components: {}, template}} 组件元数据(模板和组件列表)
  */
 const compileComps = (conf) => {
-  let cs = {}
+  const cs = {}
   return {
     components: cs,
     template: !conf ? '' : (Array.isArray(conf) ? conf.map((v, i) => compileComp(cs, v, i)) : Object.entries(conf).map(([i, v]) => compileComp(cs, v, i))).join('')
@@ -306,7 +306,7 @@ const confs2Comps = (comps, components) => {
   if (Array.isArray(comps)) {
     comps.forEach((item) => {
       if (typeof item === 'string') {
-        let compMeta = load(item)
+        const compMeta = load(item)
         if (compMeta.component) {
           components[compMeta.tagName || item] = compMeta.component
         }
@@ -317,7 +317,7 @@ const confs2Comps = (comps, components) => {
   } else if (typeof comps === 'object') {
     Object.entries(comps).forEach(([k, v]) => {
       if (typeof v === 'string') {
-        let compMeta = load(v)
+        const compMeta = load(v)
         if (compMeta.component) {
           components[k] = compMeta.component
         }
