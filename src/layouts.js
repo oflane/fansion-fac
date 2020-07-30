@@ -10,7 +10,7 @@ import fase from 'fansion-base'
  * 容器注册信息
  * @type {{}}
  */
-let layouts = {
+const layouts = {
   default: fayout
 }
 /**

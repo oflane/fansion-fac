@@ -20,15 +20,15 @@ const colTag = options.fayout.colTag || 'el-col'
 
 // 默认的布局头部配置
 const defaultHeader = {
-  'class': 'layout-header'
+  class: 'layout-header'
 }
 // 默认的布局中部配置
 const defaultBody = {
-  'class': 'layout-body'
+  class: 'layout-body'
 }
 // 默认的布局下部配置
 const defaultFooter = {
-  'class': 'layout-footer'
+  class: 'layout-footer'
 }
 
 /**
@@ -40,8 +40,8 @@ const defaultFooter = {
  * @returns {string} 布局模板
  */
 function createLayout (conf, type, slot, layout) {
-  let tagName = type === 'row' ? rowTag : type === 'col' ? colTag : 'div'
-  let h = '<' + tagName + ' ' + toProps(conf, ['isSlot', 'slot', 'rows', 'cols', 'children']) + '>'
+  const tagName = type === 'row' ? rowTag : type === 'col' ? colTag : 'div'
+  const h = '<' + tagName + ' ' + toProps(conf, ['isSlot', 'slot', 'rows', 'cols', 'children']) + '>'
   let b = ''
   if (Array.isArray(conf.rows) && conf.rows.length > 0) {
     b = conf.rows.map((row) => {
@@ -64,7 +64,7 @@ function createLayout (conf, type, slot, layout) {
     }
     b = `<slot name="${conf.slot}"/>`
   }
-  let f = `</${tagName}>`
+  const f = `</${tagName}>`
   return `${h}${b}${f}`
 }
 
@@ -77,7 +77,7 @@ function createLayout (conf, type, slot, layout) {
  * @returns {string}
  */
 function creatTemplate (pos, defaultOption, slot, layout) {
-  let p = {}
+  const p = {}
   if (typeof pos === 'object') {
     Object.assign(p, defaultOption, pos)
   } else if (Array.isArray(pos) && pos.length > 0) {
@@ -117,9 +117,8 @@ export default {
       conf = {body: conf}
     }
     // 计数器
-    let slotCount = 0
     return {
-      slotCount,
+      slotCount: 0,
       header: conf.header,
       body: conf.body,
       footer: conf.footer
@@ -138,13 +137,13 @@ export default {
   },
   beforeMount () {
     let h = ''
-    let lclass = this.layoutClass ? ' ' + this.layoutClass : ''
+    const lclass = this.layoutClass ? ' ' + this.layoutClass : ''
     this.slotCount = 0
     if (this.header) {
       h = creatTemplate(this.header, defaultHeader, 'header', this)
     }
     this.slotCount = 0
-    let b = creatTemplate(this.body, defaultBody, 'body', this)
+    const b = creatTemplate(this.body, defaultBody, 'body', this)
     this.slotCount = 0
     let f = ''
     if (this.footer) {
