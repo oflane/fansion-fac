@@ -100,7 +100,7 @@ const buildTagProp = (reg, conf) => {
       delete otherProps[dp]
       if (p === CONTENT_KEY) {
         return ''
-      } else if (p === 'page' || p === 'conf') {
+      } else if (p === 'page' || p === 'conf' || p === 'fac') {
         const m = propVal(conf, props, p, p, dp)
         return `:${p}="${m}"`
       } else if (p === 'vModel' || p === 'v-model') {
@@ -182,7 +182,7 @@ const buildTagProp = (reg, conf) => {
       return ''
     }).join(' ')
   } else if (conf.props) {
-    propStr = ':page="page" :conf="conf "'
+    propStr = ':page="page" :fac="fac" :conf="conf"'
     propStr += Object.entries(conf.props).map(([k, y]) => {
       if (isNotEmpty(y)) {
         return k + '="' + y + '"'
@@ -190,7 +190,7 @@ const buildTagProp = (reg, conf) => {
       return ''
     }).join(' ')
   } else {
-    propStr = ':page="page" :conf="conf "'
+    propStr = ':page="page" :fac="fac" :conf="conf"'
     propStr += Object.entries(conf).map(([k, y]) => {
       if (isNotEmpty(y)) {
         return k + '="' + y + '"'

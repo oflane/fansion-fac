@@ -125,8 +125,10 @@ export default {
     const layout = {}
     const conf = this.meta
     const page = this.owner ? this.owner : this
+    const fac = this
     const model = this.data
     return {
+      fac,
       model,
       conf,
       page,
