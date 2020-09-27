@@ -99,7 +99,7 @@ function release (vm) {
   r.setss && r.setss.forEach(k => sure(vm.$delete(vm._data, k)) && delete vm._data[k])
   vm._data.__ob__.vmCount = old
   r.watch.forEach(k => k())
-  vm.model = {}
+  !vm.data && sure(vm.model = {})
   vm.layout = {}
   vm.pageLoading = true
   vm.pageState = 'init'
