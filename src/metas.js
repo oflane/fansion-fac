@@ -8,13 +8,13 @@ import templates from './templates'
  * fac配置集合
  * @type {{}}
  */
-let metas = {}
+const metas = {}
 
 /**
  * 元数据加载规则集合
  * @type {Array}
  */
-let rules = [templates.rule]
+const rules = [templates.rule]
 
 /**
  * 根据元数据获取元数据名称
