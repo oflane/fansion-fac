@@ -6,7 +6,7 @@ import fase from 'fansion-base'
 /**
  * 工具方法
  */
-const { rest: {gson, furl}, mod: { depend } } = fase
+const { rest: {gson, furl}, mod: { depend }, util: { isFunction } } = fase
 
 /**
  * 模板注册中心
@@ -39,22 +39,21 @@ const setLoadMetaUrl = (url) => (loadMetaUrl = url)
  * @returns {Promise}
  */
 const getMeta = (path, addMeta, metas) => new Promise((resolve) => {
-  gson(furl(loadMetaUrl, { path })).then(function (meta) {
+  gson(furl(loadMetaUrl, { path }), null, (meta) => {
     const mp = new Promise((resolve) => {
       resolve(meta)
     })
     // 支持fac配置继承
     if (meta && meta.base) {
       depend(mp, metas[meta.base]).then(function (data) {
-        data['fac-name'] = path
-        addMeta(data)
+        addMeta(path, data)
         resolve(data)
       })
     } else if (meta.template) {
       depend(mp, [getTemplate(meta.template)]).then(function (data) {
-        data['fac-name'] = path
-        addMeta(data)
-        resolve(data)
+        const facMeta = isFunction(data) ? data(meta) : data
+        addMeta(path, facMeta)
+        resolve(facMeta)
       })
     } else {
       resolve(meta)

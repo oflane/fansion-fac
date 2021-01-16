@@ -205,10 +205,13 @@ export default {
     } else {
       toRender(this, `${template}`, components)
     }
-    callHook(vm, 'mounted')
+    //callHook(vm, 'mounted')
   },
   mounted () {
     const vm = this
+    if (vm.confing !== false) {
+      return
+    }
     typeof vm.initPage === 'function' && vm.initPage()
     Vue.nextTick(() => (vm.pageLoading = false))
   }
