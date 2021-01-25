@@ -9,7 +9,7 @@ import comps from './comps'
 import fase from 'fansion-base'
 
 // 获取工具方法
-const {render: {toRender, resetRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject, sure}, rest: {gson}} = fase
+const {render: {toRender, resetRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject, sure, isReserved, bind}, rest: {gson}} = fase
 
 /**
  * 从配置中获取不具配置
@@ -104,6 +104,23 @@ function release (vm) {
   vm.pageLoading = true
   vm.pageState = 'init'
 }
+function initMembers (vm, methods) {
+  const props = vm.$options.props
+  for (const key in methods) {
+    if (props && props.key) {
+      Vue.util.warn(
+        'Method "' + key + '" has already been defined as a prop.',
+        vm
+      )
+    }
+    if ((key in vm) && isReserved(key)) {
+      Vue.util.warn(
+        'Method "' + key + '" conflicts with an existing Vue instance method. Avoid defining component methods that start with _ or $.'
+      )
+    }
+    vm[key] = typeof methods[key] !== 'function' ? methods[key] : bind(methods[key], vm)
+  }
+}
 export default {
   name: 'Fac',
   template: '<div/>',
@@ -168,7 +185,8 @@ export default {
     // 使用配置数据覆盖默认数据
     const ms = Object.assign({}, conf.methods, {layout: layout.conf}, typeof conf.member === 'function' ? conf.member.call(this) : conf.member)
     const rlsProp = {props: Object.keys(ms)}
-    Object.assign(vm, ms)
+    // Object.assign(vm, ms)
+    initMembers(vm, ms)
 
     // 执行配置中的data方法
     const confData = typeof conf.data === 'function' ? conf.data.call(this) : conf.data
@@ -205,11 +223,11 @@ export default {
     } else {
       toRender(this, `${template}`, components)
     }
-    //callHook(vm, 'mounted')
+    // callHook(vm, 'mounted')
   },
   mounted () {
     const vm = this
-    if (vm.confing !== false) {
+    if (vm.confing === true) {
       return
     }
     typeof vm.initPage === 'function' && vm.initPage()
