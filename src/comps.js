@@ -149,10 +149,10 @@ const buildTagProp = (reg, conf) => {
         if (isNotEmpty(fd)) {
           return ':show-label.sync="' + getModel(fd) + '"'
         }
-        const bfd = conf.field || props.field
-        if (isNotEmpty(bfd)) {
-          return ':show-label.sync="' + getModel(bfd + '_label') + '"'
-        }
+        // const bfd = conf.field || props.field
+        // if (isNotEmpty(bfd)) {
+        //   return ':show-label.sync="' + getModel(bfd + '_label') + '"'
+        // }
       } else {
         let m = propVal(conf, props, null, p)
         if (isNotEmpty(m)) {
