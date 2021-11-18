@@ -156,9 +156,13 @@ export default {
   },
   watch: {
     meta () {
-      resetRender(this)
-      this._update(this._render(), false)
-      this.$mount()
+      const vm = this
+      resetRender(vm)
+      vm._update(vm._render(), false)
+      vm.$mount()
+      if (vm.$vnode) {
+        callHook(vm, 'mounted')
+      }
     },
     data (v) {
       this.model = v
