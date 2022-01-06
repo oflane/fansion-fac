@@ -9,7 +9,7 @@ import comps from './comps'
 import fase from 'fansion-base'
 
 // 获取工具方法
-const {render: {toRender, resetRender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject, sure, isReserved, bind}, rest: {gson}} = fase
+const {render: {toRender, rerender, callHook}, util: {once, proxy, isPromise, isNotEmptyObject, sure, isReserved, bind}, rest: {gson}} = fase
 
 /**
  * 从配置中获取不具配置
@@ -156,13 +156,7 @@ export default {
   },
   watch: {
     meta () {
-      const vm = this
-      resetRender(vm)
-      vm._update(vm._render(), false)
-      vm.$mount()
-      if (vm.$vnode) {
-        callHook(vm, 'mounted')
-      }
+      rerender(this)
     },
     data (v) {
       this.model = v
