@@ -20,9 +20,9 @@ function resolve (dir) {
 }
 function externals () {
   const exts = {
-    vue: 'Vue',
-    'element-ui': 'ELEMENT',
-    'vue-router': 'VueRouter'
+    vue: 'vue',
+    'element-ui': 'element-ui',
+    'vue-router': 'vue-router'
   }
   options.modules.forEach(function(e){
     exts[e] = e
